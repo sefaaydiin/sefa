@@ -38,3 +38,13 @@ def test_complete_task(tmp_path):
     dr.complete_task("2024-01-01", 0)
     tasks = dr.list_tasks("2024-01-01")
     assert tasks[0]["done"]
+
+
+def test_export_tasks(tmp_path):
+    dr.DATA_FILE = tmp_path / "routines.json"
+    dr.add_task("2024-01-02", "10:00", "Export Task")
+    csv_file = tmp_path / "tasks.csv"
+    dr.export_tasks("2024-01-02", csv_file)
+    content = csv_file.read_text(encoding="utf-8").strip().splitlines()
+    assert content[0] == "Time,Description,Done"
+    assert "Export Task" in content[1]

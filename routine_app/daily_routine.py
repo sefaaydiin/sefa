@@ -1,4 +1,5 @@
 import json
+import csv
 from datetime import date
 from pathlib import Path
 from typing import List, Dict
@@ -46,6 +47,16 @@ def list_today() -> List[Dict]:
     return list_tasks(date.today().isoformat())
 
 
+def export_tasks(task_date: str, csv_path: str) -> None:
+    """Export tasks for a given date to a CSV file."""
+    tasks = list_tasks(task_date)
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Time", "Description", "Done"])
+        for t in tasks:
+            writer.writerow([t.get("time"), t.get("description"), t.get("done", False)])
+
+
 def main():
     import argparse
 
@@ -64,6 +75,10 @@ def main():
     list_p = subparsers.add_parser("list", help="List tasks for a date")
     list_p.add_argument("date", nargs="?", default=date.today().isoformat())
 
+    export_p = subparsers.add_parser("export", help="Export tasks to CSV")
+    export_p.add_argument("date", help="YYYY-MM-DD")
+    export_p.add_argument("file", help="Output CSV file")
+
     args = parser.parse_args()
 
     if args.command == "add":
@@ -78,6 +93,8 @@ def main():
         for i, t in enumerate(tasks):
             status = "[x]" if t.get("done") else "[ ]"
             print(f"{i}. {status} {t['time']} - {t['description']}")
+    elif args.command == "export":
+        export_tasks(args.date, args.file)
     else:
         parser.print_help()
 
